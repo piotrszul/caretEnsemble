@@ -100,6 +100,19 @@ caretEnsemble <- function(all.models, optFUN=NULL, ...){
   return(out)
 }
 
+evalEnsemble <- function(ensemble,measure){
+
+  stopifnot(is(ensemble, 'caretEnsemble'))
+  models <- ensemble$models 
+  class(models)<-'caretList'
+  predobs <- makePredObsMatrix(greedy_ensemble$models)
+  error <- measure(predobs$obs, predobs$preds %*% greedy_ensemble$weights)
+  print(error)
+  errors <- apply(predobs$preds, MARGIN=2, function(x) {measure(predobs$obs,x)})
+  print(errors)
+}
+ 
+
 #' Make predictions from a caretEnsemble. This function passes the data to each function in
 #' turn to make a matrix of predictions, and then multiplies that matrix by the vector of
 #' weights to get a single, combined vector of predictions.

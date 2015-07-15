@@ -12,6 +12,12 @@ caretModelSpec <- function(method='rf', ...){
   return(out)
 }
 
+getModelName<-function(modelSpec) {
+    paste(unlist(modelSpec), sep='_', collapse="_")
+}
+
+printf <- function(...) invisible(print(sprintf(...)))
+
 #' @title Check that the tuning parameters list supplied by the user is valid
 #' @description This function makes sure the tuning parameters passed by the user are valid and have the proper naming, etc.
 #' @param x a list of user-supplied tuning parameters and methods
@@ -187,8 +193,17 @@ caretList <- function(
 
   #Loop through the tuneLists and fit caret models with those specs
   modelList <- lapply(tuneList, function(m){
+    model_name <- getModelName(m)
+    model_file <- file.path('cache',model_name)
+    if (file.exists(model_file)) {
+        printf("Loading model:%s",model_file)
+        load(model_file)
+        return (model)
+    }
     model_args <- c(global_args, m)
     model <- do.call(train, model_args)
+    printf("saving model: %s", model_file)
+    save(model, file=model_file, compress="gzip")
     return(model)
   })
   names(modelList) <- names(tuneList)
